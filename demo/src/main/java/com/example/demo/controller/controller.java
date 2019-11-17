@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,10 @@ public class controller {
 	@Autowired
 	EmployeeServiceImple imp;
 	
+	@Autowired
+	KafkaTemplate<String, Employee> kafkaTemplate;
 	
+	private static final String TOPIC="Demo_topic";
 	//----- fetch all employees record-------
 	
 	@GetMapping("/data")
@@ -85,6 +89,10 @@ public class controller {
 		}
 		
 		Employee new_emp=imp.add(da);
+		
+		
+		kafkaTemplate.send(TOPIC, da);
+		
 		
 		HttpHeaders headers = new HttpHeaders();
         headers.setLocation(ucBuilder.path("/data/{id}").buildAndExpand(new_emp.getId()).toUri());
